@@ -5,7 +5,27 @@
 #include <unistd.h>
 #include <string>
 #include <iostream>
+
+#include <thread>  
 #define PORT 8000
+
+ void get_message(int sock, char *buffer){
+    while (true){
+        recv(sock, buffer, 1024, 0);
+        printf("%s\n", buffer);
+    }
+}
+
+void send_mesagge(int sock){
+    while (true){
+        printf("Enter message:\n");
+        std::string str;
+        std::getline(std::cin, str);
+        char* cstr = strdup(str.c_str());
+        send(sock, cstr, strlen(cstr) , 0);
+        delete [] cstr;
+    }
+}
  
 int main(int argc, char const* argv[])
 {
@@ -32,20 +52,12 @@ int main(int argc, char const* argv[])
         printf("\nConnection Failed \n");
         return -1;
     }
-    
-    while (true)
-    {
-        printf("Enter message:\n");
-        std::string str;
-        std::getline(std::cin, str);
-        char* cstr = strdup(str.c_str());
-        send(sock, cstr, strlen(cstr) , 0);
 
-        delete [] cstr;
+    std::thread send(send_mesagge, sock);
+    std::thread get(get_message, sock, buffer);
 
-        recv(sock, buffer, 1024, 0);
-        printf("%s\n", buffer);
-    }
+    send.join();
+    get.join();
 
     return 0;
 }
