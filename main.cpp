@@ -7,12 +7,15 @@
 #include <iostream>
 
 #include <thread>  
-#define PORT 8000
+#define PORT 5001
 
  void get_message(int sock, char *buffer){
-    while (true){
-        recv(sock, buffer, 1024, 0);
-        printf("%s\n", buffer);
+   while (true) {
+        int recv_get = recv(sock, buffer, 4096-1, 0);
+        if (recv_get >= 0) {
+            buffer[recv_get] = 0;
+            printf("%s %d\n", buffer, recv_get);
+        }
     }
 }
 
@@ -21,15 +24,14 @@ void send_mesagge(int sock){
         printf("Enter message:\n");
         std::string str;
         std::getline(std::cin, str);
-        char* cstr = strdup(str.c_str());
-        send(sock, cstr, strlen(cstr) , 0);
-        delete [] cstr;
+        send(sock, str.c_str(), str.length() , 0);
+        send(sock, "\n", 1 , 0);
     }
 }
  
 int main(int argc, char const* argv[])
 {
-    char ip_adres_server[] = "127.0.0.1";
+    char ip_adres_server[] = "38.242.239.161";
     int sock = 0, valread, client_fd;
     struct sockaddr_in serv_addr;
     char buffer[1024] = { 0 };
